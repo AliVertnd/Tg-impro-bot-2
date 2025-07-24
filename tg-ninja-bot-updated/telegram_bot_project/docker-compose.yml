@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  tg-ninja-bot:
+    build: .
+    container_name: tg-ninja-bot
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - postgres
+    networks:
+      - tg-ninja-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: tg-ninja-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tg_ninja_bot
+      POSTGRES_USER: tg_ninja_user
+      POSTGRES_PASSWORD: secure_password_here
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tg-ninja-network
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: tg-ninja-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - tg-ninja-network
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  tg-ninja-network:
+    driver: bridge
+
